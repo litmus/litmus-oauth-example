@@ -16,6 +16,6 @@ export OAUTH2_CLIENT_SECRET="b68309ca4e6edca4d673f2827050fcfe85b56bcf97e602699a7
 # optional
 export INSTANT_BASE_URI="http://0.0.0.0:3000/v1"
 export INSTANT_SKIP_SSL_VERIFICATION=true
-export OAUTH_PROVIDER="http://localhost:3000"
+export LITMUS_OAUTH_HOST="http://localhost:3000"
 ```
 

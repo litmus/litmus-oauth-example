@@ -11,7 +11,7 @@ Bundler.require
 abort("Error starting server - OAUTH2_CLIENT_ID required") unless ENV["OAUTH2_CLIENT_ID"]
 abort("Error starting server - OAUTH2_CLIENT_SECRET required") unless ENV["OAUTH2_CLIENT_SECRET"]
 
-OAUTH_PROVIDER = ENV["OAUTH_PROVIDER"] || "https://litmus.com"
+OAUTH_PROVIDER = ENV["LITMUS_OAUTH_HOST"] || "https://litmus.com"
 
 Litmus::Instant.default_options.update(verify: false) if ENV["INSTANT_SKIP_SSL_VERIFICATION"]
 Litmus::Instant.base_uri ENV["INSTANT_BASE_URI"] if ENV["INSTANT_BASE_URI"]
