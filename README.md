@@ -1,29 +1,21 @@
-# Examples of InstantAPI usage
+# Litmus OAuth Partner integration example app
 
-## Prerequisites
+## Deployment
 
-- ruby
-- bundler
+This is structured for easy deployment to heroku. At the time of writing
+deployed to https://litmus-oauth-example.herokuapp.com
 
-## Launch
+## ENV vars
 
+Example:
 ```
-$ bundle
-```
+# required
+export OAUTH2_CLIENT_ID="f9f75cad29d77b581f1a872f09b2143a23739906a6aab5cbcd727cba371b8932"
+export OAUTH2_CLIENT_SECRET="b68309ca4e6edca4d673f2827050fcfe85b56bcf97e602699a7905c4cfafd86a"
 
-and then
-
-```
-$ API_KEY=replace_with_your_api_key ruby example_simple.rb
-```
-
-or
-
-```
-$ API_KEY=replace_with_your_api_key ruby example_batch.rb
+# optional
+export INSTANT_BASE_URI="http://0.0.0.0:3000/v1"
+export INSTANT_SKIP_SSL_VERIFICATION=true
+export OAUTH_PROVIDER="http://localhost:3000"
 ```
 
-
-## Open
-
-Navigate to http://0.0.0.0:4567/example (or the port shown at launch)
