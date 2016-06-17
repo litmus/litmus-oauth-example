@@ -1,9 +1,12 @@
 source "https://rubygems.org"
 
-ruby "2.2.3"
+ruby "2.3.1"
 
 gem "sinatra"
-gem "oauth2"
 gem "httparty"
-gem "litmus-instant", github: 'litmus/instant-api-ruby', branch: 'oauth'
+gem "litmus-instant", github: "litmus/instant-api-ruby", branch: "oauth"
+gem "omniauth-litmus"
 
+group :development do
+  gem "thin"
+end

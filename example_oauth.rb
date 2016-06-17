@@ -1,8 +1,9 @@
 #
 # Things this demo doesn't currently demonstrate:
 # - rate limiting
-# - client restrictions
+# - client restrictions due to Litmus product / user state
 # - handling the flow where a user declines authorization or signup for litmus
+# - using omniauth metadata
 #
 
 require "bundler"
@@ -11,77 +12,21 @@ Bundler.require
 abort("Error starting server - OAUTH2_CLIENT_ID required") unless ENV["OAUTH2_CLIENT_ID"]
 abort("Error starting server - OAUTH2_CLIENT_SECRET required") unless ENV["OAUTH2_CLIENT_SECRET"]
 
-OAUTH_PROVIDER = ENV["LITMUS_OAUTH_HOST"] || "https://litmus.com"
-
-Litmus::Instant.default_options.update(verify: false) if ENV["INSTANT_SKIP_SSL_VERIFICATION"]
-Litmus::Instant.base_uri ENV["INSTANT_BASE_URI"] if ENV["INSTANT_BASE_URI"]
-Litmus::Instant.debug_output $stdout
+use OmniAuth::Builder do
+  provider :litmus, ENV['OAUTH2_CLIENT_ID'], ENV['OAUTH2_CLIENT_SECRET']
+end
 
 enable :sessions
 
 helpers do
-  def client(token_method = :post)
-    OAuth2::Client.new(
-      ENV['OAUTH2_CLIENT_ID'],
-      ENV['OAUTH2_CLIENT_SECRET'],
-      site: OAUTH_PROVIDER,
-      token_method: token_method
-    )
-  end
-
-  def user_authorize!
-    session[:return_to] = request.url unless request.url =~ /connect/
-    redirect client.auth_code.authorize_url(redirect_uri: redirect_uri) # optionally specify scope: "full"
-  end
-
   def connected?
     !session[:access_token].nil?
   end
 
-  def refresh_available?
-    !session[:refresh_token].nil?
-  end
-
-  def refresh_token!
-    # makes a server to server request for a token
-    new_token = OAuth2::AccessToken.new(
-      client, session[:access_token], refresh_token: session[:refresh_token]
-    ).refresh!
-    store_token(new_token)
-  end
-
-  def store_token(token)
-    # Note: you'd usually persist this information, we only keep it on the
-    # session to keep this demo simple
-    session[:access_token]  = token.token
-    session[:refresh_token] = token.refresh_token
-    session[:expires_at]    = token.expires_at
-  end
-
-  def redirect_uri
-    request.base_url + "/callback" # eg http://0.0.0.0:4567/callback
-  end
-
-  def token_expired?
-    session[:expires_at] && (Time.at(session[:expires_at]) < Time.now)
-  end
-
-  # Ensure we have a valid OAuth token before making API calls
   def oauthorize!
-    # Arguably we should be hitting an endpoint to check the token hasn't been
-    # invalidated since we received it, rather than relying on what we knew when
-    # we received it.
-    return if connected? && !token_expired?
-
-    if refresh_available?
-      refresh_token!
-    else
-      # If the user's already authorized the app and they're logged in to
-      # litmus, this
-      # will be invisible to the user (just some redirects while we receive a
-      # new token)
-      user_authorize!
-    end
+    session[:return_to] = request.url
+    # The omniauth strategy should deal with expiration and refresh for us
+    redirect "/auth/litmus"
   end
 end
 
@@ -89,32 +34,21 @@ get '/' do
   erb :home
 end
 
+# our resource that requires Litmus auth (as it will call out to the Litmus API)
 get '/example' do
-  begin
-    oauthorize!
+  oauthorize! unless connected?
+  message = params[:message] || 'Aloha world!'
 
-    message = params[:message] || 'Aloha world!'
-
-    result = Litmus::Instant.create_email(
-      { 'plain_text' => message },
-      token: session[:access_token]
-    )
-    email_guid = JSON.parse(result.body)['email_guid']
-    clients = %w(OL2000 GMAILNEW IPHONE6 THUNDERBIRDLATEST)
-    previews = clients.map do |client|
-      [client, Litmus::Instant.preview_image_url(email_guid, client, capture_size: 'thumb450')]
-    end
-    erb :example, locals: { previews: previews }
-  rescue Litmus::Instant::InvalidOAuthToken
-    # perhaps access has been revoked since we received the last token
-    user_authorize!
+  result = Litmus::Instant.create_email(
+    { 'plain_text' => message },
+    token: session[:access_token]
+  )
+  email_guid = JSON.parse(result.body)['email_guid']
+  clients = %w(OL2000 GMAILNEW IPHONE6 THUNDERBIRDLATEST)
+  previews = clients.map do |client|
+    [client, Litmus::Instant.preview_image_url(email_guid, client, capture_size: 'thumb450')]
   end
-end
-
-# for Oauth:
-
-get '/connect' do
-  user_authorize! unless connected?
+  erb :example, locals: { previews: previews }
 end
 
 get '/sign_out' do
@@ -124,15 +58,27 @@ get '/sign_out' do
   redirect '/'
 end
 
-get '/callback' do
-  new_token = client.auth_code.get_token(params[:code], redirect_uri: redirect_uri)
-  store_token(new_token)
-  redirect(session[:return_to] || "/")
+get '/auth/litmus/callback' do
+  session[:access_token] = request.env['omniauth.auth'].credentials.token
+  session[:name] = request.env['omniauth.auth'].info.name
+  redirect '/'
 end
 
-get '/refresh' do
-  refresh_token!
-  redirect '/'
+get '/auth/failure' do
+  "Auth failed #{params[:message]}"
+end
+
+error Litmus::Instant::InactiveUserError do
+  "The Litmus user appears to be inactive"
+end
+
+error Litmus::Instant::AuthorizationError do
+  "The Litmus user isn't authorized to perform the required actions"
+end
+
+error Litmus::Instant::InvalidOAuthToken do
+  # perhaps access has been revoked since we received the last token
+  oauthorize!
 end
 
 __END__
@@ -140,13 +86,13 @@ __END__
 @@home
 <h1>Example Partner App</h1>
 <% if connected? %>
-  <p>Your are connected with Litmus OAuth</p>
+  <p>Hi <%= session[:name] %>, you are connected with Litmus OAuth</p>
   <a href="/example">Open Instant example</a>
   <br><br>
   <a href="/sign_out">Sign out</a> of the Example App
   (ends session, but the app will remain authorized against the user's litmus account)
 <% else %>
-  You are signed out, please <a href="/connect">Connect with Litmus</a> or
+  You are signed out, please <a href="/auth/litmus">Connect with Litmus</a> or
   <a href="https://litmus.com#cobranded-landing">Learn more</a>
 <% end %>
 

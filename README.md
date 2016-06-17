@@ -5,6 +5,20 @@
 This is structured for easy deployment to heroku. At the time of writing
 deployed to https://litmus-oauth-example.herokuapp.com
 
+## Running locally
+
+```
+source .env && bundle exec thin start --ssl --port 4567
+```
+
+Then use https://litmus-oauth-example.127.0.0.1.xip.io:4567 (callback URLs
+require HTTPS)
+
+Within Litmus the application must have a callback URL specified of:
+```
+https://litmus-oauth-example.127.0.0.1.xip.io:4567/auth/litmus/callback
+```
+
 ## ENV vars
 
 Example:
@@ -18,4 +32,3 @@ export INSTANT_BASE_URI="http://0.0.0.0:3000/v1"
 export INSTANT_SKIP_SSL_VERIFICATION=true
 export LITMUS_OAUTH_HOST="http://localhost:3000"
 ```
-
