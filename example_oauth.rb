@@ -3,7 +3,6 @@
 # - rate limiting
 # - client restrictions due to Litmus product / user state
 # - handling the flow where a user declines authorization or signup for litmus
-# - using omniauth metadata
 #
 
 require "bundler"
