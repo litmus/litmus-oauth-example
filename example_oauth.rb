@@ -38,9 +38,10 @@ get '/example' do
   oauthorize! unless connected?
   message = params[:message] || 'Aloha world!'
 
-  result = Litmus::Instant.create_email(
-    { 'plain_text' => message },
-    token: session[:access_token]
+  result = Litmus::Instant::Client.new(
+    oauth_token: session[:access_token]
+  ).create_email(
+    { 'plain_text' => message }
   )
   email_guid = JSON.parse(result.body)['email_guid']
   clients = %w(OL2000 GMAILNEW IPHONE6 THUNDERBIRDLATEST)
