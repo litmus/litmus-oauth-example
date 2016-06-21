@@ -1,4 +1,20 @@
-# Litmus OAuth Partner integration example app
+# Litmus OAuth: Example Partner Integration
+
+A minimal example of integrating with Litmus APIs using Litmus OAuth.
+
+The example uses ruby, sinatra, [omniauth-litmus](https://github.com/litmus/omniauth-litmus) and the [instant-api ruby client](https://github.com/litmus/instant-api-ruby).
+
+## Prerequisites
+
+- ruby 2.3.1
+- bundler
+- a valid Litmus OAuth `client_id` and `client_secret`
+
+## Setup
+
+```sh
+bundle
+```
 
 ## Deployment
 
@@ -7,11 +23,11 @@ deployed to https://litmus-oauth-example.herokuapp.com
 
 ## Running locally
 
-```
+```sh
 source .env && bundle exec thin start --ssl --port 4567
 ```
 
-Then use https://litmus-oauth-example.127.0.0.1.xip.io:4567 (callback URLs
+Then use https://litmus-oauth-example.127.0.0.1.xip.io:4567 (OAuth callback URLs
 require HTTPS)
 
 Within Litmus the application must have a callback URL specified of:
