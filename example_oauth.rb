@@ -41,7 +41,7 @@ get '/example' do
   result = Litmus::Instant::Client.new(
     oauth_token: session[:access_token]
   ).create_email(
-    { 'plain_text' => message }
+    { "html_text" => "<h1>#{message}</h1>" }
   )
   email_guid = JSON.parse(result.body)['email_guid']
   clients = %w(OL2000 GMAILNEW IPHONE6 THUNDERBIRDLATEST)
