@@ -66,15 +66,15 @@ get '/auth/litmus/callback' do
 end
 
 get '/auth/failure' do
-  "Auth failed #{params[:message]}"
+  erb "Auth failed: #{params[:message]}"
 end
 
 error Litmus::Instant::InactiveUserError do
-  "The Litmus user appears to be inactive"
+  erb "The Litmus user appears to be inactive"
 end
 
 error Litmus::Instant::AuthorizationError do
-  "The Litmus user isn't authorized to perform the required actions"
+  erb "The Litmus user isn't authorized to perform the required actions"
 end
 
 error Litmus::Instant::InvalidOAuthToken do
@@ -84,8 +84,12 @@ end
 
 __END__
 
+@@layout
+<style>body { font: 20px helvetica, arial, sans-serif; }</style>
+<h1>Example Partner App</h1><hr>
+<%= yield %>
+
 @@home
-<h1>Example Partner App</h1>
 <% if connected? %>
   <p>Hi <%= session[:name] %>, you are connected with Litmus OAuth</p>
   <a href="/example">Open Instant example</a>
@@ -98,7 +102,6 @@ __END__
 <% end %>
 
 @@example
-<h1>Example Partner App</h1>
 <p>
   Add your custom message as a parameter,
   <a href="?message=I like marmots">eg like this</a>.
