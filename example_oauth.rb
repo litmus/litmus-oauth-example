@@ -11,6 +11,7 @@ Bundler.require
 abort("Error starting server - OAUTH2_CLIENT_ID required") unless ENV["OAUTH2_CLIENT_ID"]
 abort("Error starting server - OAUTH2_CLIENT_SECRET required") unless ENV["OAUTH2_CLIENT_SECRET"]
 
+OmniAuth.config.failure_raise_out_environments = []
 use OmniAuth::Builder do
   provider :litmus, ENV['OAUTH2_CLIENT_ID'], ENV['OAUTH2_CLIENT_SECRET']
 end
