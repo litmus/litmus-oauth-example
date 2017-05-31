@@ -94,7 +94,7 @@ __END__
   (ends session, but the app will remain authorized against the user's litmus account)
 <% else %>
   You are signed out, please <a href="/auth/litmus">Connect with Litmus</a> or
-  <a href="https://litmus.com#cobranded-landing">Learn more</a>
+  <a href="https://litmus.com/pricing/example-partner">Learn more</a>
 <% end %>
 
 @@example
