@@ -86,7 +86,7 @@ __END__
 
 @@layout
 <style>body { font: 20px helvetica, arial, sans-serif; }</style>
-<h1>Example Partner App</h1><hr>
+<h1><%= ENV["APP_NAME"] || "Example Partner App" %></h1><hr>
 <%= yield %>
 
 @@home
