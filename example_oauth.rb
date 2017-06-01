@@ -18,18 +18,6 @@ end
 
 enable :sessions
 
-helpers do
-  def connected?
-    !session[:access_token].nil?
-  end
-
-  def oauthorize!
-    session[:return_to] = request.url
-    # The omniauth strategy should deal with expiration and refresh for us
-    redirect "/auth/litmus"
-  end
-end
-
 get '/' do
   erb :home
 end
@@ -82,11 +70,31 @@ error Litmus::Instant::InvalidOAuthToken do
   oauthorize!
 end
 
+helpers do
+  def connected?
+    !session[:access_token].nil?
+  end
+
+  def oauthorize!
+    session[:return_to] = request.url
+    # The omniauth strategy should deal with expiration and refresh for us
+    redirect "/auth/litmus"
+  end
+
+  def marketing_url
+    ENV["MARKETING_URL"] || "https://litmus.com/pricing/example-partner"
+  end
+
+  def app_name
+    ENV["APP_NAME"] || "Example Partner App"
+  end
+end
+
 __END__
 
 @@layout
 <style>body { font: 20px helvetica, arial, sans-serif; }</style>
-<h1><%= ENV["APP_NAME"] || "Example Partner App" %></h1><hr>
+<h1><%= app_name %></h1><hr>
 <%= yield %>
 
 @@home
@@ -98,7 +106,7 @@ __END__
   (ends session, but the app will remain authorized against the user's litmus account)
 <% else %>
   You are signed out, please <a href="/auth/litmus">Connect with Litmus</a> or
-  <a href="https://litmus.com/pricing/example-partner">Learn more</a>
+  <a href="<%= marketing_url %>">Learn more</a>
 <% end %>
 
 @@example
