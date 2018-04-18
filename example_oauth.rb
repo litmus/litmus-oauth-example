@@ -47,6 +47,21 @@ get '/sign_out' do
   redirect '/'
 end
 
+get '/revoke' do
+  return 'No access token' unless session[:access_token]
+
+  token = session[:access_token]
+  oauth_host = OmniAuth::Strategies::Litmus::OAUTH_HOST
+  revoke_url = "#{oauth_host}/oauth/revoke"
+
+  <<~HTML
+  <form action="#{revoke_url}" method="post">
+    <input type="hidden" name="token" value="#{token}">
+    <input type="submit" value="Revoke">
+  </form>
+  HTML
+end
+
 get '/auth/litmus/callback' do
   session[:access_token] = request.env['omniauth.auth'].credentials.token
   session[:name] = request.env['omniauth.auth'].info.name
@@ -104,6 +119,10 @@ __END__
   <br><br>
   <a href="/sign_out">Sign out</a> of the Example App
   (ends session, but the app will remain authorized against the user's litmus account)
+  <br><br>
+  <a href="/revoke">Revoke</a> authorization to Litmus
+  (requests the authorization and associated tokens be invalidated, ie
+   disconnect from the user's litmus account)
 <% else %>
   You are signed out, please <a href="/auth/litmus">Connect with Litmus</a> or
   <a href="<%= marketing_url %>">Learn more</a>
