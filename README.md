@@ -6,7 +6,7 @@ The example uses ruby, sinatra, [omniauth-litmus](https://github.com/litmus/omni
 
 ## Prerequisites
 
-- ruby 2.3.1
+- ruby 2.7.0
 - bundler
 - a valid Litmus OAuth `client_id` and `client_secret`
 
