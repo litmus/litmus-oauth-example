@@ -18,6 +18,10 @@ end
 
 enable :sessions
 
+before do
+  redirect request.url.sub('http', 'https') unless request.secure?
+end
+
 get '/' do
   erb :home
 end
