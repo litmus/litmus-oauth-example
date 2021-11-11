@@ -27,12 +27,12 @@ deployed to https://litmus-oauth-example.herokuapp.com
 source .env && bundle exec thin start --ssl --port 4567
 ```
 
-Then use https://litmus-oauth-example.127.0.0.1.xip.io:4567 (OAuth callback URLs
+Then use https://litmus-oauth-example.127.0.0.1.nip.io:4567 (OAuth callback URLs
 require HTTPS)
 
 Within Litmus the application must have a callback URL specified of:
 ```
-https://litmus-oauth-example.127.0.0.1.xip.io:4567/auth/litmus/callback
+https://litmus-oauth-example.127.0.0.1.nip.io:4567/auth/litmus/callback
 ```
 
 ## ENV vars
