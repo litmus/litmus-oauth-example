@@ -24,7 +24,7 @@ deployed to https://litmus-oauth-example.herokuapp.com
 ## Running locally
 
 ```sh
-source .env && bundle exec thin start --ssl --port 4567
+source .env && bundle exec thin start --ssl --ssl-disable-verify --port 4567
 ```
 
 Then use https://litmus-oauth-example.127.0.0.1.nip.io:4567 (OAuth callback URLs

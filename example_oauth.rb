@@ -12,6 +12,9 @@ abort("Error starting server - OAUTH2_CLIENT_ID required") unless ENV["OAUTH2_CL
 abort("Error starting server - OAUTH2_CLIENT_SECRET required") unless ENV["OAUTH2_CLIENT_SECRET"]
 
 OmniAuth.config.failure_raise_out_environments = []
+# OmniAuth 2+ defaults to only allowing POST when initiating the flow to
+# minimise CSRF risks. For simplicity here, we allow GETs too.
+OmniAuth.config.allowed_request_methods = [:get, :post]
 use OmniAuth::Builder do
   provider :litmus, ENV['OAUTH2_CLIENT_ID'], ENV['OAUTH2_CLIENT_SECRET']
 end
