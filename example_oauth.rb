@@ -30,7 +30,7 @@ get '/' do
 end
 
 # our resource that requires Litmus auth (as it will call out to the Litmus API)
-get '/example' do
+get '/instant_api/example' do
   oauthorize! unless connected?
   message = params[:message] || 'Aloha world!'
 
@@ -44,7 +44,22 @@ get '/example' do
   previews = clients.map do |client|
     [client, Litmus::Instant.preview_image_url(email_guid, client, capture_size: 'thumb450')]
   end
-  erb :example, locals: { previews: previews }
+  erb :instant_api_example, locals: { previews: previews }
+end
+
+get '/v3/example' do
+  require 'net/http'
+  require 'json'
+  uri     = URI("#{ENV["LITMUS_API_HOST"]}/v3/ping/authenticated")
+  token   = session[:access_token]
+  request = Net::HTTP::Get.new(uri)
+  request["Authorization"] = "Bearer #{token}"
+
+  endpoint_response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do | http|
+    http.request(request)
+  end
+
+  erb :v3_api_example, locals: { json: JSON.pretty_generate(JSON.parse(endpoint_response.body)) }
 end
 
 get '/sign_out' do
@@ -107,7 +122,9 @@ __END__
 @@home
 <% if connected? %>
   <p>Hi <%= session[:name] %>, you are connected with Litmus OAuth</p>
-  <a href="/example">Open Instant example</a>
+  <a href="/instant_api/example">Open Instant example</a>
+  <br><br>
+  <a href="/v3/example">Open V3 API Example</a>
   <br><br>
   <a href="/sign_out">Sign out</a> of the Example App
   (ends session, but the app will remain authorized against the user's litmus account)
@@ -116,14 +133,20 @@ __END__
   <a href="<%= marketing_url %>">Learn more</a>
 <% end %>
 
-@@example
+@@instant_api_example
 <p>
   Add your custom message as a parameter,
   <a href="?message=I like marmots">eg like this</a>.
-<p>
+</p>
 <% previews.each do |client, url| %>
   <figure>
     <figcaption><%= client %></figcaption>
     <img src="<%= url %>">
   </figure>
 <% end %>
+
+@@v3_api_example
+<p>
+  Response from <pre><code>/v3/ping/authenticated</code></pre>
+</p>
+<pre><code><%= json %></code></pre>
